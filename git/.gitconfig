@@ -5,7 +5,7 @@
 	
 	# Commit helpers
 	ci = "!f() { git commit -m \"$*\";}; f"
-	ca = "!f() { git add -p && git commit -m \"$*\";}; f" 
+	ca = "!f() { git add . && git commit -m \"$*\";}; f" 
 
 	# Checkou to existing branch
 	co = checkout
@@ -14,30 +14,28 @@
 	cb = "!f() { git checkout -b $1 2> /dev/null && echo Created new branch $1 || `git checkout $1`; }; f"
 	
 	# Compare local and remote
-	incoming = !(git fetch --quiet && git log --pretty=format:'%C(yellow)[%h] %C(white)- %C(red)%an %C(white): %C(cyan)%d%Creset %s %C(white)- %ar%Creset' ..@{u})
-	outgoing = !(git fetch --quiet && git log --pretty=format:'%C(yellow)%h %C(white)- %C(red)%an %C(white)- %C(cyan)%d%Creset %s %C(white)- %ar%Creset' @{u}..)
-	ahead = "!sh -c 'echo branch is $(git rev-list --count origin/dev..HEAD) commits ahead dev'"
-	behind = "!sh -c 'echo branch is $(git rev-list --count HEAD..origin/dev) commits behind dev'"
+	ahead = "!sh -c 'echo branch is $(git rev-list --count origin/$0..HEAD) commits ahead dev'"
+	behind = "!sh -c 'echo branch is $(git rev-list --count HEAD..origin/$0) commits behind dev'"
 
 	# Log
-	l = !git log --pretty=format:'%C(cyan)[%h]%Creset -%C(auto)%d%Creset %C(white)%s %C(blue)%an, %Cred%cr' --max-count=60
-	la = !git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset'
+  l = !git log --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
+  la = !git log --graph --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
 	
 	# Log last commit
 	last = log -1 HEAD --stat
 
-	# Remove things from HEAD 
+	# Undo things
 	unstage = reset HEAD --
 
 	# Undo untracked files
 	undo = checkout .
 
-	# Reset last commit and let files on stagged
+	# Reset last commit
 	rollback = reset --soft HEAD~1
 
 	# Diff
-	d = diff --color-words
-	df = diff --name-status
+	d = !git diff --color-words | bat
+	df = !git diff --name-status | bat
 
 	# Delete a local branch
 	db = branch -D
@@ -62,7 +60,22 @@
   
 	# Cherry-pick
 	cp = cherry-pick
-[color]	ui = auto
+
+  # Ammend las commit
+
+  amend = !git add --all && git commit --amend --no-edit
+  count = !git shortlog -s --grep
+
+	df = "!git hist | awk '{print $2}' | xargs -I {} git diff {}^ {}"
+  hist = log --pretty=format:\"%Cgreen%h %Creset%cd %Cblue[%cn] %Creset%s%C(yellow)%d%C(reset)\" --graph --date=relative --decorate --all
+
+	open = "!gh repo view --web"
+[color]
+  status = auto
+  diff = auto
+  branch = auto
+  interactive = auto
+  grep = auto
 	ui = auto
 [core]
 	abbrev = 7
@@ -72,7 +85,7 @@
 	filemode = true
 	logallrefupdates = true
 	repositoryformatversion = 0
-	editor = code --wait
+	editor = nvim
 [credential]
 	helper = cache --timeout=86400
 [filter "lfs"]
@@ -99,7 +112,14 @@
 [push]
 	default = matching
 [user]
-	email = rennandelcastillo@liferay.com
+	email = rennan.prysthon@liferay.com
 	name = Rennan Prysthon
 [init]
 	defaultBranch = main
+[diff]
+  tool = nvimdiff
+[difftool "nvimdiff"]
+	cmd = nvim -d \"$LOCAL\" \"$REMOTE\"
+[mergetool "nvimdiff"]
+	cmd = nvim -d \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true

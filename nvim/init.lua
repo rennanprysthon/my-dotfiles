@@ -1,5 +1,4 @@
-require('plugins')
-require('mappings')
-require('base')
-
-vim.cmd[[colorscheme dracula]]
+require('rennanprysthon.base')
+require('rennanprysthon.highlights')
+require('rennanprysthon.maps')
+require('rennanprysthon.plugins')
