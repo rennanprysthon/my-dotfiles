@@ -1,11 +1,25 @@
+[core]
+	abbrev = 7
+	autocrlf = false
+	bare = false
+	hideDotFiles = dotGitOnly
+	filemode = true
+	logallrefupdates = true
+	repositoryformatversion = 0
+	editor = nvim 
+	pager = delta
 [alias]
+  # Wip
+  wip = !git add . && git commit -m \"wip\"
+  amend = !git add --all && git commit --amend --no-edit
+
 	# Status
 	s = status -sb
 	sf = show --name-status --pretty=""
 	
 	# Commit helpers
 	ci = "!f() { git commit -m \"$*\";}; f"
-	ca = "!f() { git add . && git commit -m \"$*\";}; f" 
+	ca = "!f() { git add --all && git commit -m \"$*\";}; f" 
 
 	# Checkou to existing branch
 	co = checkout
@@ -14,31 +28,29 @@
 	cb = "!f() { git checkout -b $1 2> /dev/null && echo Created new branch $1 || `git checkout $1`; }; f"
 	
 	# Compare local and remote
-	ahead = "!sh -c 'echo branch is $(git rev-list --count origin/$0..HEAD) commits ahead dev'"
-	behind = "!sh -c 'echo branch is $(git rev-list --count HEAD..origin/$0) commits behind dev'"
+	ahead = "!sh -c 'echo branch is $(git rev-list --count origin/$0..HEAD) commits ahead $0'"
+	behind = "!sh -c 'echo branch is $(git rev-list --count HEAD..origin/$0) commits behind $0'"
 
 	# Log
-  l = !git log --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
-  la = !git log --graph --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
+  l = log --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
+  la = log --all --graph --pretty=format:'%C(blue)%h%C(red)%d %C(white)%s - %C(cyan)%cn, %C(green)%cr' 
 	
-	# Log last commit
-	last = log -1 HEAD --stat
+	# Log last commit files
+	last = log -1 HEAD --stat --name-status
 
-	# Undo things
+	# Unstage things
 	unstage = reset HEAD --
 
-	# Undo untracked files
-	undo = checkout .
-
 	# Reset last commit
-	rollback = reset --soft HEAD~1
-
+	undo = reset HEAD^
+  
 	# Diff
-	d = !git diff --color-words | bat
-	df = !git diff --name-status | bat
+	d = diff 
 
 	# Delete a local branch
 	db = branch -D
+
+  # DD = 
 
 	# Delete a remote branch
 	db-remote = !sh -c 'git push origin :$0'
@@ -50,26 +62,25 @@
 	cln = clean -f -d
 
 	# Search
-	se = !git rev-list --all | xargs git grep -F
+	search = !git rev-list --all | xargs git grep -F
 	
 	# Branches logs
 	bl = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate
+
+	# Delete all but dev
+	chacina = !git branch | grep -v "dev" | grep -v "main" | xargs git branch -D 
 	
-	# Reset last commit
-	pop = reset HEAD^
-  
 	# Cherry-pick
 	cp = cherry-pick
 
-  # Ammend las commit
-
-  amend = !git add --all && git commit --amend --no-edit
+  # Ammend last commit
   count = !git shortlog -s --grep
 
 	df = "!git hist | awk '{print $2}' | xargs -I {} git diff {}^ {}"
   hist = log --pretty=format:\"%Cgreen%h %Creset%cd %Cblue[%cn] %Creset%s%C(yellow)%d%C(reset)\" --graph --date=relative --decorate --all
 
 	open = "!gh repo view --web"
+	yolo = !git commit -m \"$(curl -X GET https://whatthecommit.com/index.txt)\"
 [color]
   status = auto
   diff = auto
@@ -77,15 +88,6 @@
   interactive = auto
   grep = auto
 	ui = auto
-[core]
-	abbrev = 7
-	autocrlf = false
-	bare = false
-	hideDotFiles = dotGitOnly
-	filemode = true
-	logallrefupdates = true
-	repositoryformatversion = 0
-	editor = nvim
 [credential]
 	helper = cache --timeout=86400
 [filter "lfs"]
@@ -96,9 +98,6 @@
 [gc]
 	auto = 0
 	autodetach = false
-[github]
-	oauth-token = 
-	user = rennanprysthon
 [git-pull-request]
 	close-default-comment = Merged. Thank you.
 	color-display-title-user = cyan
@@ -107,19 +106,29 @@
 	update-method = rebase
 [merge]
 	renameLimit = 1000
+	conflictstyle = diff3
 [pull]
 	rebase = true
 [push]
 	default = matching
 [user]
-	email = rennan.prysthon@liferay.com
+	email = rennandelcastillo@gmail.com
 	name = Rennan Prysthon
 [init]
 	defaultBranch = main
 [diff]
-  tool = nvimdiff
-[difftool "nvimdiff"]
-	cmd = nvim -d \"$LOCAL\" \"$REMOTE\"
-[mergetool "nvimdiff"]
-	cmd = nvim -d \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
+	colorMoved = default
+[interactive]
+	diffFilter = delta --color-only --features=interactive
+[delta]
+	navigate = true
+	features = decorations
+[delta "decorations"]
+	commit-decoration-style = blue ol
+	commit-style = raw
+	file-style = omit
+	hunk-header-decoration-style = blue box
+	hunk-header-file-style = red
+	hunk-header-line-number-style = "#067a00"
+	hunk-header-style = file line-number syntax
+	
