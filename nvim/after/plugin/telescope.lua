@@ -33,7 +33,15 @@ telescope.setup {
           ["h"] = fb_actions.goto_parent_dir,
           ["/"] = function()
             vim.cmd('startinsert')
-          end
+          end,
+          ["<C-u>"] = function(prompt_bufnr)
+            for i = 1, 10 do actions.move_selection_previous(prompt_bufnr) end
+          end,
+          ["<C-d>"] = function(prompt_bufnr)
+            for i = 1, 10 do actions.move_selection_next(prompt_bufnr) end
+          end,
+          ["<PageUp>"] = actions.preview_scrolling_up,
+          ["<PageDown>"] = actions.preview_scrolling_down,
         },
       },
     },
@@ -49,13 +57,13 @@ vim.keymap.set('n', 'ff',
       hidden = true
     })
   end)
-vim.keymap.set('n', 'fr', function()
+vim.keymap.set('n', 'fg', function()
   builtin.live_grep()
 end)
 vim.keymap.set('n', '\\\\', function()
   builtin.buffers()
 end)
-vim.keymap.set('n', 'ft', function()
+vim.keymap.set('n', ';t', function()
   builtin.help_tags()
 end)
 vim.keymap.set('n', ';;', function()
@@ -64,7 +72,7 @@ end)
 vim.keymap.set('n', ';e', function()
   builtin.diagnostics()
 end)
-vim.keymap.set("n", "sf", function()
+vim.keymap.set("n", "fb", function()
   telescope.extensions.file_browser.file_browser({
     path = "%:p:h",
     cwd = telescope_buffer_dir(),
